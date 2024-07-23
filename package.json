@@ -8,7 +8,7 @@
     "dev": "nodemon src/app.ts",
     "build": "tsc",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migration:generate": "npm run typeorm migration:generate -- -d src/config/data-source.ts src/migration/InitialMigration",
+    "migration:generate": "npm run typeorm migration:generate -- -d src/config/data-source.ts src/migrations/InitialMigration",
     "migration:run": "npm run typeorm migration:run -- -d src/config/data-source.ts"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
     "debug": "~2.6.9",
     "dotenv": "^16.4.5",
     "express": "~4.16.1",
+    "express-async-handler": "^1.2.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "mysql2": "^3.10.3",
