@@ -3,6 +3,10 @@ import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
 import indexRouter from './routes/index';
+import { AppDataSource } from "./config/data-source";
+import { config } from "dotenv";
+
+config();
 
 const app = express();
 
@@ -16,6 +20,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+
+// Connect DB
+AppDataSource.initialize()
+    .then(() => {
+        console.log('Datasource has been initialized')  
+    })
+    .catch((err) => {
+        console.error('Error during Datasource initialization: ', err)
+    })
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     res.locals.message = err.message;
