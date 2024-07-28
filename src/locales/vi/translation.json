@@ -30,5 +30,8 @@
       "english": "Tiếng Anh",
       "vietnamese": "Tiếng Việt"
     },
-    "titleListBook": "Danh sách sách"
+    "titleListBook": "Danh sách sách",
+    "error" : {
+      "invalidId": "ID không hợp lệ"
+    }
   }

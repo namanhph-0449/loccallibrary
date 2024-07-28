@@ -30,5 +30,8 @@
       "english": "English",
       "vietnamese": "Vietnamese"
     },
-    "titleListBook": "List of books"
+    "titleListBook": "List of books",
+    "error" : {
+      "invalidId": "Invalid ID"
+    }
   }

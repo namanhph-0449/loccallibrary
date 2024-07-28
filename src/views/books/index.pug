@@ -1,7 +1,7 @@
 extends ../layout
 
 block content
-  h1= title
+  h1 #{t('home.bookList')}
   if books.length
     ul
       each book in books
@@ -9,4 +9,4 @@ block content
           a(href=book.url) #{book.title}
           | (#{book.author.name})
   else
-  p= noBooks
+    p #{t('home.noBook')}

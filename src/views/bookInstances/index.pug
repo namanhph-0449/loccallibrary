@@ -1,7 +1,7 @@
 extends ../layout
 
 block content
-  h1= title
+  h1 #{t('home.bookInstanceList')}
   if bookInstances.length
     ul
       each bookInstance in bookInstances
@@ -16,4 +16,4 @@ block content
             span(class='text-red') #{bookInstance.status} 
           |(#{bookInstance.dueBack})
   else
-    p= noBookInstances
+    p #{t('home.noBookInstance')}
