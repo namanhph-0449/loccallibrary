@@ -5,6 +5,8 @@ import path from "path";
 import indexRouter from './routes/index';
 import { AppDataSource } from "./config/data-source";
 import { config } from "dotenv";
+import i18next from './i18n';
+import i18nextMiddleware from 'i18next-http-middleware';
 
 config();
 
@@ -18,6 +20,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+app.use(i18nextMiddleware.handle(i18next));
+
+// Cấu hình middleware để gán hàm t vào biến cục bộ
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.locals.t = req.t;
+    next();
+});
 
 app.use("/", indexRouter);
 
