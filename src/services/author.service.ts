@@ -8,3 +8,10 @@ export const authorList = async () => {
     order: { firstName: 'ASC' },
   });
 };
+
+export const authorDetail = async (id: number) => {
+  return await authorRepository.findOne({
+    relations: ['books'],
+    where: { id: id },
+  });
+};

@@ -1,7 +1,7 @@
 extends ../layout
 
 block content
-  h1= title
+  h1 #{t('home.authorList')}
   if authors.length
     ul
       each author in authors
@@ -9,4 +9,4 @@ block content
           a(href=author.name) #{author.name} 
           |(#{author.dateOfBirth} - #{author.dateOfDeath})
   else
-  p= noAuthors
+    p #{t('home.noAuthor')}

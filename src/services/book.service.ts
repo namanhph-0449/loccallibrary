@@ -23,8 +23,15 @@ export const index = async () => {
 };
 
 export const bookList = async () => {
-    return await bookRepository.find({
-      order: { title: 'ASC' },
-      relations: ['author'],
-    });
-  };
+  return await bookRepository.find({
+    order: { title: 'ASC' },
+    relations: ['author'],
+  });
+};
+
+export const bookDetail = async (id: number) => {
+  return await bookRepository.findOne({
+    relations: ['author', 'genres', 'bookInstances'],
+    where: { id: id },
+  });
+};  

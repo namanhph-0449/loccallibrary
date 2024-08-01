@@ -1,11 +1,11 @@
 extends ../layout
 
 block content
-  h1= title
+  h1 #{t('home.genreList')}
   if genres.length
     ul
       each genre in genres
         li
           a(href=genre.name) #{genre.name}
   else
-  p= noGenres
+    p #{t('home.noGenre')}

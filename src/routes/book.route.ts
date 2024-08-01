@@ -1,5 +1,6 @@
 import express from 'express';
 import * as bookController from '../controllers/book.controller';
+import { checkValidId } from '../middlewares';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.post('/:id/delete', bookController.bookDelete);
 
 router.put('/:id/update', bookController.bookUpdate);
 
-router.get('/:id', bookController.bookDetail);
+router.get('/:id', checkValidId, bookController.bookDetail);
 
 router.get('/', bookController.bookList);
 
