@@ -15,3 +15,25 @@ export const authorDetail = async (id: number) => {
     where: { id: id },
   });
 };
+
+export const authorCreate = (data: any) => {
+  const author = new Author();
+  author.firstName = data.firstName;
+  author.familyName = data.familyName;
+  author.dateOfBirth = data.dateOfBirth ? data.dateOfBirth : null;
+  author.dateOfDeath = data.dateOfDeath ? data.dateOfDeath : null;
+  return authorRepository.create(author);
+};
+
+export const authorUpdate = async (author: Author, data: any) => {
+  author.firstName = data.firstName;
+  author.familyName = data.familyName;
+  author.dateOfBirth = data.dateOfBirth ? data.dateOfBirth : null;
+  author.dateOfDeath = data.dateOfDeath ? data.dateOfDeath : null;
+
+  return await authorRepository.save(author);
+};
+
+export const authorDelete = async (id: number) => {
+  await authorRepository.delete(id);
+};

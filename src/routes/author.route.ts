@@ -4,11 +4,19 @@ import { checkValidId } from '../middlewares';
 
 const router = express.Router();
 
-router.post('/create', authorController.authorCreate);
+router.get('/create', authorController.authorCreateGet);
 
-router.post('/:id/delete', authorController.authorDelete);
+router.post('/create', authorController.authorCreatePost);
 
-router.put('/:id/update', authorController.authorUpdate);
+router.get('/:id/update', authorController.authorUpdateGet);
+
+router.post('/:id/update',authorController.authorUpdatePost);
+
+router.get('/:id/delete', authorController.authorDeleteGet);
+
+router.post('/:id/delete', authorController.authorDeletePost);
+
+router.get('/:id', authorController.authorDetail);
 
 router.get('/:id', checkValidId, authorController.authorDetail);
 

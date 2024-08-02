@@ -3,6 +3,9 @@ import asyncHandler from 'express-async-handler'
 import { t } from 'i18next'
 import * as genreService from '../services/genre.service'
 import { Genre } from '../entity/genre.entity';
+import { ActionForm } from '../constant';
+import { body, Result, validationResult } from 'express-validator';
+import { checkValidId } from '../middlewares';
 
 interface IGenreRequest extends Request {
   genre?: Genre | null;
@@ -32,15 +35,65 @@ export const genreDetail = [checkExistsGenre, (req: IGenreRequest, res: Response
   });
 }];
 
+export const genreCreateGet = (req: Request, res: Response) => {
+  res.render('genres/form', {
+    title: t('home.createGenre'), action: ActionForm.Create,
+  });
+}
+
 // Do the same with other actions Update, Delete, Create
-export const genreCreate = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Genre create POST')
-})
+export const genreCreatePost = [
+  body('name', t('error.genreNameMustContainAtLeast3Characters')).trim().isLength({ min: 3 }).escape(),
+  (req: Request, res: Response) => {
+    const errors: Result = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.render('genres/form', {
+        title: t('home.createGenre'),
+        action: ActionForm.Create,
+        genre: req.body,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      const genre = genreService.genreCreatePost(req.body);
+      res.redirect(`/genre/${genre.id}`);
+    }
+  },
+];
 
-export const genreDelete = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Genre delete POST')
-})
+export const genreDeleteGet = [checkValidId, checkExistsGenre, (req: IGenreRequest, res: Response) => {
+  res.render('genres/delete', { title: t('home.deleteGenre'), genre: req.genre });
+}];
 
-export const genreUpdate = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Genre update POST')
-})
+export const genreDeletePost = [checkValidId, checkExistsGenre, asyncHandler(async (req: Request, res: Response) => {
+  await genreService.genreDeletePost(parseInt(req.params.id));
+  res.redirect('/genre');
+})];
+
+export const genreUpdateGet = [checkValidId, checkExistsGenre, (req: IGenreRequest, res: Response) => {
+  res.render('genres/form', {
+    title: t('home.updateGenre'), genre: req.genre, action: ActionForm.Update,
+  });
+}];
+
+export const genreUpdatePost = [
+  checkValidId, 
+  body('name', t('error.genreNameMustContainAtLeast3Characters')).trim().isLength({ min: 3 }).escape(),
+  checkExistsGenre, 
+  asyncHandler(async (req: IGenreRequest, res: Response) => {
+    const errors: Result = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.render('genres/form', {
+        title: t('home.updateGenre'),
+        genre: req.body,
+        action: ActionForm.Update,
+        errors: errors.array(),
+      });
+      return;
+    }
+      if (req.genre) {
+        const genre = await genreService.genreUpdatePost(req.genre, req.body);
+        res.redirect(`/genre/${genre.id}`);
+      }
+    },
+)];
