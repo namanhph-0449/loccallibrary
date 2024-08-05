@@ -3,6 +3,10 @@ import asyncHandler from 'express-async-handler'
 import * as authorService from '../services/author.service'
 import { t } from 'i18next';
 import { Author } from '../entity/author.entity';
+import { body, Result, validationResult } from 'express-validator';
+import { checkValidId } from '../middlewares';
+import { ActionForm } from '../constant';
+import * as authMiddleware from '../middlewares/author.middleware';
 
 interface IAuthorRequest extends Request {
   author?: Author | null;
@@ -33,14 +37,76 @@ export const authorDetail = [checkExistsAuthor, (req: IAuthorRequest, res: Respo
 }];
 
 // Do the same with other actions Update, Delete, Create
-export const authorCreate = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Author create POST')
-})
+export const authorCreateGet = (req: Request, res: Response) => {
+  res.render('authors/form', { title: t('home.createAuthor'), action: ActionForm.Create });
+};
 
-export const authorDelete = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Author delete POST')
-})
+export const authorCreatePost = [
+  ...authMiddleware.commonAuthorValidation, 
+  (req: Request, res: Response) => {
+    const errors: Result = validationResult(req);
+    if (errors.isEmpty()) {
+      const newAuthor = authorService.authorCreate(req.body);
 
-export const authorUpdate = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Author update POST')
-})
+      if (newAuthor) {
+        res.redirect(`/author/${newAuthor.id}`);
+      } else {
+        res.redirect('/author');
+      }
+    }
+
+    res.render('authors/form', {
+      title: t('home.createAuthor'),
+      action: 'create',
+      errors: errors.array(),
+    });
+  },
+];
+
+export const authorDeleteGet = [checkValidId, checkExistsAuthor, (req: IAuthorRequest, res: Response) => {
+  const allBooksByAuthor = req.author?.books;
+  res.render('authors/delete', { title: t('home.deleteAuthor'), author: req.author, authorBooks: allBooksByAuthor });
+}]
+
+export const authorDeletePost = [checkValidId, checkExistsAuthor, asyncHandler(async (req: IAuthorRequest, res: Response) => {
+  const allBooksByAuthor = req.author?.books;
+  if (allBooksByAuthor && allBooksByAuthor.length > 0) {
+    res.render('authors/delete', {
+      title: t('home.deleteAuthor'),
+      author: req.author,
+      authorBooks: allBooksByAuthor,
+    });
+    return;
+  } else {
+    await authorService.authorDelete(parseInt(req.params.id));
+    res.redirect('/author');
+  }
+})];
+
+export const authorUpdateGet = [checkValidId, checkExistsAuthor, (req: IAuthorRequest, res: Response) => {
+  res.render('authors/form', { title: t('home.updateAuthor'), action: ActionForm.Update, author: req.author });
+}];
+
+export const authorUpdatePost = [
+  checkValidId,
+  ...authMiddleware.commonAuthorValidation,  
+  checkExistsAuthor, 
+  asyncHandler(async (req: IAuthorRequest, res: Response) => {
+  const errors: Result = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.render('authors/form', {
+      title: t('home.updateAuthor'),
+      action: ActionForm.Update,
+      author: req.body,
+      errors: errors.array(),
+    });
+  }
+  if (req.author) {
+    const newAuthor = await authorService.authorUpdate(req.author, req.body);
+    if (newAuthor) {
+      res.redirect('/');
+    } else {
+      res.redirect('/author');
+    }
+  }
+})];

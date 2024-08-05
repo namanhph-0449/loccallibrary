@@ -5,6 +5,7 @@ import path from "path";
 import indexRouter from './routes/index';
 import { AppDataSource } from "./config/data-source";
 import { config } from "dotenv";
+import { matchedData, query, validationResult } from 'express-validator';
 import i18next from './i18n';
 import i18nextMiddleware from 'i18next-http-middleware';
 

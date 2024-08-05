@@ -3,6 +3,10 @@ import { Request, Response, NextFunction } from 'express'
 import asyncHandler from 'express-async-handler'
 import { t } from 'i18next';
 import { Book } from '../entity/book.entity';
+import { body, Result, validationResult } from 'express-validator';
+import * as bookMiddleware from '../middlewares/book.middleware';
+import { ActionForm } from '../constant';
+import { checkValidId } from '../middlewares';
 
 interface IBookRequest extends Request {
     book?: Book | null;
@@ -48,15 +52,72 @@ export const bookDetail = [checkExistsBook, (req: IBookRequest, res: Response) =
 
 // Do the same with other actions Update, Delete, Create
 
-export const bookCreate = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Book create POST')
-})
+export const bookCreateGet = asyncHandler(async (req: Request, res: Response) => {
+  const [allAuthors, allGenres] = await bookService.bookCreateGet();
+  res.render('books/form', { title: t('home.createBook'), action: ActionForm.Create, authors: allAuthors, genres: allGenres });
+});
 
-export const bookDelete = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Book delete POST')
-})
+export const bookCreatePost = [
+  bookMiddleware.checkValidGenreBook,
+  ...bookMiddleware.commonBookValidation,
+  asyncHandler(async (req: IBookRequest, res: Response) => {
+    const errors: Result = validationResult(req);
+    if (!errors.isEmpty()) {
+      const [allAuthors, allGenres] = await bookService.bookCreateGet();
+      res.render('books/form', {
+        title: t('home.updateBook'),
+        authors: allAuthors,
+        genres: allGenres,
+        book: req.body,
+        errors: errors.array(),
+      });
+    }
 
-export const bookUpdate = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('NOT IMPLEMENTED: Book update POST')
-})
+    const newbook = await bookService.bookCreatePost(req.body);
+    res.redirect(`/book/${newbook.id}`);
+  }),
+];
+
+export const bookDeleteGet = [checkValidId, checkExistsBook, (req: IBookRequest, res: Response) => {
+  const bookInstances = req.book?.bookInstances;
+  res.render('books/delete', { title: t('home.deleteBook'), book: req.book, bookInstances });
+}];
+
+export const bookDeletePost = [checkValidId, checkExistsBook, asyncHandler(async (req: IBookRequest, res: Response) => {
+  const bookInstances = req.book?.bookInstances;
+  if (bookInstances && bookInstances.length > 0) {
+    res.render('books/delete', { title: t('home.deleteBook'), book: req.body, bookInstances });
+  } else {
+    await bookService.bookDelete(parseInt(req.params.id));
+    res.redirect('/book');
+  }
+})];
+
+export const bookUpdateGet = [checkValidId, checkExistsBook, asyncHandler(async (req: IBookRequest, res: Response) => {
+  const [allAuthors, allGenres] = await bookService.bookCreateGet();
+  res.render('books/form', { title: t('home.updateBook'), action: ActionForm.Update, authors: allAuthors, genres: allGenres, book: req.book });
+})];
+
+export const bookUpdatePost = [
+  checkValidId,
+  ...bookMiddleware.commonBookValidation,
+  checkExistsBook, 
+  asyncHandler(async (req: IBookRequest, res: Response) => {
+  const errors: Result = validationResult(req);
+  if (!errors.isEmpty()) {
+    const [allAuthors, allGenres] = await bookService.bookCreateGet();
+    res.render('books/form', {
+      title: t('home.updateBook'),
+      authors: allAuthors,
+      genres: allGenres,
+      book: req.book,
+      errors: errors.array(),
+    });
+    return;
+  }
+  if (req.book) {
+    const updatedBook = await bookService.bookUpdatePost(req.book, req.book);
+    res.redirect(`/book/${updatedBook.id}`);
+  }
+})];
 
